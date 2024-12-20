@@ -42,10 +42,30 @@ public:
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
+
+	UFUNCTION()
+	void AttachPuck(class APuck* puck);
+
+	UFUNCTION()
+	void DetachPuck();
+
+	UFUNCTION()
+	void ChargeShot();
+
+	UFUNCTION()
+	void Shoot();
+
 protected:
+	class APuck* m_attachedPuck;
 
+	float m_chargeRate;
+	float m_shotPower;
 
-			
+	UPROPERTY(EditDefaultsOnly)
+	float m_baseShotPower;
+	bool m_bIsCharging;
+
+	class APuckGamePlayerController* m_controller;
 
 protected:
 
@@ -53,6 +73,8 @@ protected:
 	
 	// To add mapping context
 	virtual void BeginPlay();
+
+	virtual void Tick(float DeltaTime);
 
 public:
 	///** Returns CameraBoom subobject **/

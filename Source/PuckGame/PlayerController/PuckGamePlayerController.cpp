@@ -12,13 +12,17 @@
 
 void APuckGamePlayerController::SetupInputComponent()
 {
-	APlayerController::SetupInputComponent();
+	Super::SetupInputComponent();
 
 	if (UEnhancedInputComponent* Component = Cast<UEnhancedInputComponent>(InputComponent))
 	{
 		// Jumping
 		Component->BindAction(m_jumpAction, ETriggerEvent::Started, this, &APuckGamePlayerController::Jump);
 		Component->BindAction(m_jumpAction, ETriggerEvent::Completed, this, &APuckGamePlayerController::StopJumping);
+
+		//Shooting
+		Component->BindAction(m_shootAction, ETriggerEvent::Started, this, &APuckGamePlayerController::StartShooting);
+		Component->BindAction(m_shootAction, ETriggerEvent::Completed, this, &APuckGamePlayerController::StopShooting);
 
 		// Moving
 		Component->BindAction(m_moveAction, ETriggerEvent::Triggered, this, &APuckGamePlayerController::Move);
@@ -50,6 +54,20 @@ void APuckGamePlayerController::Jump()
 	m_character->Jump();
 }
 
+void APuckGamePlayerController::StartShooting()
+{
+	if (!m_character) return;
+
+	m_character->ChargeShot();
+}
+
+void APuckGamePlayerController::StopShooting()
+{
+	if (!m_character) return;
+
+	m_character->Shoot();
+}
+
 void APuckGamePlayerController::StopJumping()
 {
 	if (!m_character) return;
@@ -62,6 +80,9 @@ void APuckGamePlayerController::AcknowledgePossession(APawn* pawn)
 	APlayerController::AcknowledgePossession(pawn);
 
 	m_character = Cast<APuckGameCharacter>(pawn);
+
+	
+	//Player = m_character->getplater
 }
 
 void APuckGamePlayerController::BeginPlay()

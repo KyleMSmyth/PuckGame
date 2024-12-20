@@ -10,6 +10,8 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "PuckGame/Puck/Puck.h"
+
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -27,7 +29,7 @@ APuckGameCharacter::APuckGameCharacter()
 	bUseControllerRotationRoll = false;
 
 	// Configure character movement
-	GetCharacterMovement()->bOrientRotationToMovement = false; // Character moves in the direction of input...	
+	GetCharacterMovement()->bOrientRotationToMovement = false; // Character moves in the direction of input...
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f); // ...at this rotation rate
 
 	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
@@ -38,6 +40,13 @@ APuckGameCharacter::APuckGameCharacter()
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
+
+	m_chargeRate = 75000.0f;
+	m_bIsCharging = false;
+	m_baseShotPower = 5000.0f;
+	m_shotPower = m_baseShotPower;
+
+	m_controller = Cast<APuckGamePlayerController>(Controller);
 
 	//// Create a camera boom (pulls in towards the player if there is a collision)
 	//CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
@@ -59,6 +68,28 @@ void APuckGameCharacter::BeginPlay()
 	// Call the base class  
 	Super::BeginPlay();
 
+}
+
+void APuckGameCharacter::Tick(float DeltaTime)
+{
+	if (GEngine)
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::SanitizeFloat(m_shotPower));
+
+	FHitResult Hit;
+
+	m_controller->GetHitResultUnderCursor(ECC_WorldStatic, true, Hit);
+
+	FVector Direction = GetActorLocation() - Hit.Location;
+
+	//FVector mouseLocation, mouseDirection;
+	FRotator currentCharacterRotation = this->GetActorRotation();
+	FRotator targetRotation = Direction.Rotation();
+
+	FRotator newRotation = FRotator(currentCharacterRotation.Pitch, targetRotation.Yaw, currentCharacterRotation.Roll);
+	SetActorRotation(newRotation);
+
+	if(m_bIsCharging)
+		m_shotPower = FMath::Clamp(m_shotPower + (m_chargeRate * GetWorld()->GetDeltaSeconds()), 0.0f, 100000.0f);
 }
 
 
@@ -105,5 +136,46 @@ void APuckGameCharacter::Look(const FInputActionValue& Value)
 		// add yaw and pitch input to controller
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
+	}
+}
+
+void APuckGameCharacter::AttachPuck(APuck* puck)
+{
+	m_attachedPuck = puck;
+}
+
+void APuckGameCharacter::DetachPuck()
+{
+	if(m_attachedPuck)
+	{
+		//m_attachedPuck->DetachCharacter();
+		m_attachedPuck = nullptr;
+	}
+}
+
+void APuckGameCharacter::ChargeShot()
+{
+	if(Controller != nullptr)
+	{
+		if (m_attachedPuck)
+		{
+			m_bIsCharging = true;
+		}
+	}
+}
+
+void APuckGameCharacter::Shoot()
+{
+	if(Controller != nullptr)
+	{
+		if (m_attachedPuck)
+		{
+			m_bIsCharging = false;
+			m_attachedPuck->DetachCharacter((GetActorForwardVector().GetSafeNormal() * m_shotPower));
+
+			DetachPuck();
+			m_shotPower = m_baseShotPower;
+			
+		}
 	}
 }

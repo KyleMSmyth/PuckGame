@@ -37,6 +37,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* m_jumpAction;
 
+	//Shoot Input Action
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* m_shootAction;
+
 protected:
 	virtual void SetupInputComponent() override;
 	virtual void AcknowledgePossession(APawn* pawn) override;
@@ -48,6 +52,10 @@ protected:
 	void Look(const FInputActionValue& value);
 
 	void Jump();
+
+	void StartShooting();
+	void StopShooting();
+
 
 	void StopJumping();
 
