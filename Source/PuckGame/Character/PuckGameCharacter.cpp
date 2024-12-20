@@ -46,8 +46,48 @@ APuckGameCharacter::APuckGameCharacter()
 	m_bIsCharging = false;
 	m_baseShotPower = 5000.0f;
 	m_shotPower = m_baseShotPower;
+	m_stamina = m_maxStamina;
+	m_baseSpeed = 500.0f;
+	m_sprintSpeed = 750.0f;
+	m_bIsHustle = false;
 
 	m_controller = Cast<APuckGamePlayerController>(Controller);
+}
+
+void APuckGameCharacter::RefillStamima()
+{
+
+}
+
+bool APuckGameCharacter::DrainStamina(float amount)
+{
+	if (m_stamina >= amount)
+	{
+		m_stamina -= amount;
+		Sprint();
+		m_bIsHustle = true;
+		return true;
+	}
+
+	return false;
+}
+
+void APuckGameCharacter::Sprint()
+{
+	if(Controller != nullptr)
+	{
+			m_bIsHustle = true;
+	}
+}
+
+void APuckGameCharacter::StopSprint()
+{
+	if (Controller != nullptr)
+	{
+		GetCharacterMovement()->MaxWalkSpeed = m_baseSpeed;
+
+		m_bIsHustle = false;
+	}
 }
 
 void APuckGameCharacter::BeginPlay()
@@ -60,7 +100,10 @@ void APuckGameCharacter::BeginPlay()
 void APuckGameCharacter::Tick(float DeltaTime)
 {
 	if (GEngine)
+	{
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::SanitizeFloat(m_shotPower));
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, FString::SanitizeFloat(m_stamina));
+	}
 
 	if (!this) return;
 
@@ -86,15 +129,48 @@ void APuckGameCharacter::Tick(float DeltaTime)
 	}
 
 	if (m_bIsCharging)
-		m_shotPower = FMath::Clamp(m_shotPower + (m_chargeRate * GetWorld()->GetDeltaSeconds()), 0.0f, 100000.0f);
+	{
+		if(m_flipCharging)		
+		{
+			m_shotPower = FMath::Clamp(m_shotPower + (m_chargeRate * GetWorld()->GetDeltaSeconds()), 0.0f, 50000.0f);
+		}
+		else
+		{
+			m_shotPower = FMath::Clamp(m_shotPower + (m_chargeRate * GetWorld()->GetDeltaSeconds()), 0.0f, 100000.0f);
+		}
+	}
 
 	if (m_flipCharging)
 	{
 		m_flipDelta = UKismetMathLibrary::NormalizedDeltaRotator(m_flipStartRot, GetActorRotation());
 
-		if (m_flipDelta.Yaw > 35.0f || m_flipDelta.Yaw < -35.0f)
+		if (m_flipDelta.Yaw > 60.0f || m_flipDelta.Yaw < -60.0f)
 			FlipPuck();
 	}
+
+	if (m_bIsHustle)
+	{
+		if (!DrainStamina(m_staminaUseRate * DeltaTime))
+		{
+			StopSprint();
+
+		}
+		else
+		{
+			Sprint();
+			GetCharacterMovement()->MaxWalkSpeed = m_sprintSpeed ;
+			m_staminaDeltaTime = 0.0f;
+		}
+	}
+
+	if (m_staminaDeltaTime >= m_staminaDelay && m_stamina < m_maxStamina)
+	{
+		m_stamina += m_staminaRechargeRate * DeltaTime, 0.0f, 100.0f;
+		if (m_stamina > m_maxStamina)
+			m_stamina = m_maxStamina;
+	}
+	
+	m_staminaDeltaTime += DeltaTime;
 }
 
 
@@ -191,11 +267,12 @@ void APuckGameCharacter::FlipPuck()
 	if (m_attachedPuck)
 	{
 		m_bIsCharging = false;
-		m_attachedPuck->DetachCharacter((m_attachedPuck->GetActorLocation() - m_flipStartPos) + FVector::UpVector * m_shotPower);
+		m_attachedPuck->DetachCharacter(((m_attachedPuck->GetActorLocation() - m_flipStartPos) + m_baseShotPower) + (FVector::UpVector * m_shotPower));
 
 		DetachPuck();
 		m_shotPower = m_baseShotPower;
 
+		m_flipCharging = false;
 	}
 
 }
@@ -216,5 +293,15 @@ void APuckGameCharacter::FlipStart()
 void APuckGameCharacter::FlipCancel()
 {
 	if(Controller != nullptr)
-		m_flipCharging = false;
+	{
+		if(m_attachedPuck)
+		{
+			m_flipCharging = false;
+			m_bIsCharging = false;
+
+			m_attachedPuck->DetachCharacter((m_attachedPuck->GetActorLocation() - m_flipStartPos) + FVector::UpVector * m_shotPower/2);
+			DetachPuck();
+			m_shotPower = m_baseShotPower;
+		}
+	}
 }

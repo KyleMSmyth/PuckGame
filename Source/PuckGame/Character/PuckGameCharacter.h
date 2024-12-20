@@ -64,6 +64,13 @@ public:
 	UFUNCTION()
 	void FlipCancel();
 
+	UFUNCTION()
+	void Sprint();
+
+	UFUNCTION()
+	void StopSprint();
+
+
 	UPROPERTY()
 	class APuckGamePlayerController* m_controller;
 
@@ -90,6 +97,44 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	float m_flipWait = 0.0f;
+
+
+
+	FTimerHandle m_staminaCoolDown;
+	FTimerHandle m_staminaRefill;
+
+	bool m_bIsHustle ;
+
+	void RefillStamima();
+
+	bool DrainStamina(float amount);
+
+
+	UPROPERTY(EditDefaultsOnly)
+	float m_baseSpeed;
+
+	UPROPERTY(EditDefaultsOnly)
+	float m_sprintSpeed;
+
+	UPROPERTY(EditDefaultsOnly)
+	float m_maxStamina = 100.0f;
+
+	UPROPERTY()
+	float m_stamina;
+	
+	UPROPERTY()
+	float m_staminaDelay = 3.0f;
+
+	UPROPERTY()
+	float m_staminaRechargeRate = 33.33f;
+
+	UPROPERTY()
+	float m_staminaUseRate = 50.0f;
+
+	UPROPERTY()
+	float m_staminaDeltaTime = 0.0f;
+
+
 
 
 

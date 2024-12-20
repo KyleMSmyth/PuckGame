@@ -44,6 +44,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* m_flipAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* m_sprintAction;
+
 	bool GetHitResultUnderCursor(ECollisionChannel TraceChannel, bool bTraceComplex, FHitResult& HitResult) const;
 protected:
 	virtual void SetupInputComponent() override;
@@ -64,6 +67,9 @@ protected:
 	void FlipCancel();
 
 	void StopJumping();
+
+	void StartSprint();
+	void StopSprint();
 
 private:
 	class APuckGameCharacter* m_character;

@@ -30,6 +30,10 @@ void APuckGamePlayerController::SetupInputComponent()
 		Component->BindAction(m_flipAction, ETriggerEvent::Started, this, &APuckGamePlayerController::FlipStart);
 		Component->BindAction(m_flipAction, ETriggerEvent::Completed, this, &APuckGamePlayerController::FlipCancel);
 
+		//Sprinting
+		Component->BindAction(m_sprintAction, ETriggerEvent::Started, this, &APuckGamePlayerController::StartSprint);
+		Component->BindAction(m_sprintAction, ETriggerEvent::Completed, this, &APuckGamePlayerController::StopSprint);
+
 		// Moving
 		Component->BindAction(m_moveAction, ETriggerEvent::Triggered, this, &APuckGamePlayerController::Move);
 
@@ -93,6 +97,21 @@ void APuckGamePlayerController::StopJumping()
 	if (!m_character) return;
 
 	m_character->StopJumping();
+}
+
+void APuckGamePlayerController::StartSprint()
+{
+	if (!m_character) return;
+
+	m_character->Sprint();
+}
+
+void APuckGamePlayerController::StopSprint()
+{
+	if (!m_character) return;
+
+	m_character->StopSprint();
+
 }
 
 void APuckGamePlayerController::AcknowledgePossession(APawn* pawn)
