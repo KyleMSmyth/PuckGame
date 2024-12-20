@@ -11,6 +11,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "PuckGame/Puck/Puck.h"
+#include "Kismet/KismetMathLibrary.h"
 
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -22,7 +23,7 @@ APuckGameCharacter::APuckGameCharacter()
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-		
+
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
@@ -63,8 +64,8 @@ void APuckGameCharacter::Tick(float DeltaTime)
 
 	if (!this) return;
 
-	//if(GetController() != nullptr)
-	//{
+	if (GetController() != nullptr)
+	{
 		FHitResult Hit;
 		//APuckGamePlayerController* PC = Cast<APuckGamePlayerController>(GetController());
 
@@ -82,11 +83,18 @@ void APuckGameCharacter::Tick(float DeltaTime)
 
 		FRotator newRotation = FRotator(currentCharacterRotation.Pitch, targetRotation.Yaw, currentCharacterRotation.Roll);
 		SetActorRotation(newRotation);
-	//}
+	}
 
-		if (m_bIsCharging)
-			m_shotPower = FMath::Clamp(m_shotPower + (m_chargeRate * GetWorld()->GetDeltaSeconds()), 0.0f, 100000.0f);
-	
+	if (m_bIsCharging)
+		m_shotPower = FMath::Clamp(m_shotPower + (m_chargeRate * GetWorld()->GetDeltaSeconds()), 0.0f, 100000.0f);
+
+	if (m_flipCharging)
+	{
+		m_flipDelta = UKismetMathLibrary::NormalizedDeltaRotator(m_flipStartRot, GetActorRotation());
+
+		if (m_flipDelta.Yaw > 35.0f)
+			FlipPuck();
+	}
 }
 
 
@@ -100,12 +108,12 @@ void APuckGameCharacter::Move(const FInputActionValue& Value)
 	{
 		APlayerCameraManager* CamManager = GetWorld()->GetFirstPlayerController()->PlayerCameraManager;
 
-		const FVector ForwardMovement = FVector(CamManager->GetTransformComponent()->GetForwardVector().X, 
-											CamManager->GetTransformComponent()->GetForwardVector().Y,0);
+		const FVector ForwardMovement = FVector(CamManager->GetTransformComponent()->GetForwardVector().X,
+			CamManager->GetTransformComponent()->GetForwardVector().Y, 0);
 
 		const FVector RightMovement = FVector(CamManager->GetTransformComponent()->GetRightVector().X,
-											CamManager->GetTransformComponent()->GetRightVector().Y, 0);
-		
+			CamManager->GetTransformComponent()->GetRightVector().Y, 0);
+
 		//
 		//// find out which way is forward
 		//const FRotator Rotation = Controller->GetControlRotation();
@@ -113,7 +121,7 @@ void APuckGameCharacter::Move(const FInputActionValue& Value)
 
 		//// get forward vector
 		//const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-	
+
 		//// get right vector 
 		//const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
@@ -143,7 +151,7 @@ void APuckGameCharacter::AttachPuck(APuck* puck)
 
 void APuckGameCharacter::DetachPuck()
 {
-	if(m_attachedPuck)
+	if (m_attachedPuck)
 	{
 		//m_attachedPuck->DetachCharacter();
 		m_attachedPuck = nullptr;
@@ -152,7 +160,7 @@ void APuckGameCharacter::DetachPuck()
 
 void APuckGameCharacter::ChargeShot()
 {
-	if(Controller != nullptr)
+	if (Controller != nullptr)
 	{
 		if (m_attachedPuck)
 		{
@@ -163,7 +171,7 @@ void APuckGameCharacter::ChargeShot()
 
 void APuckGameCharacter::Shoot()
 {
-	if(Controller != nullptr)
+	if (Controller != nullptr)
 	{
 		if (m_attachedPuck)
 		{
@@ -172,7 +180,41 @@ void APuckGameCharacter::Shoot()
 
 			DetachPuck();
 			m_shotPower = m_baseShotPower;
-			
+
 		}
 	}
+}
+
+void APuckGameCharacter::FlipPuck()
+{
+
+	if (m_attachedPuck)
+	{
+		m_bIsCharging = false;
+		m_attachedPuck->DetachCharacter((m_attachedPuck->GetActorLocation() - m_flipStartPos) * m_shotPower);
+
+		DetachPuck();
+		m_shotPower = m_baseShotPower;
+
+	}
+
+}
+
+void APuckGameCharacter::FlipStart()
+{
+	if(Controller != nullptr)
+	{
+		if(m_attachedPuck != nullptr)
+		{
+			m_flipStartRot = GetActorRotation();
+			m_flipStartPos = m_attachedPuck->GetActorLocation();
+			m_flipCharging = true;
+		}
+	}
+}
+
+void APuckGameCharacter::FlipCancel()
+{
+	if(Controller != nullptr)
+		m_flipCharging = false;
 }

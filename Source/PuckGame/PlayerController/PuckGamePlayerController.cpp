@@ -26,6 +26,10 @@ void APuckGamePlayerController::SetupInputComponent()
 		Component->BindAction(m_shootAction, ETriggerEvent::Started, this, &APuckGamePlayerController::StartShooting);
 		Component->BindAction(m_shootAction, ETriggerEvent::Completed, this, &APuckGamePlayerController::StopShooting);
 
+		//Flipping Puck
+		Component->BindAction(m_flipAction, ETriggerEvent::Started, this, &APuckGamePlayerController::FlipStart);
+		Component->BindAction(m_flipAction, ETriggerEvent::Completed, this, &APuckGamePlayerController::FlipCancel);
+
 		// Moving
 		Component->BindAction(m_moveAction, ETriggerEvent::Triggered, this, &APuckGamePlayerController::Move);
 
@@ -68,6 +72,20 @@ void APuckGamePlayerController::StopShooting()
 	if (!m_character) return;
 
 	m_character->Shoot();
+}
+
+void APuckGamePlayerController::FlipStart()
+{
+	if (!m_character) return;
+
+	m_character->FlipStart();
+}
+
+void APuckGamePlayerController::FlipCancel()
+{
+	if (!m_character) return;
+
+	m_character->FlipCancel();
 }
 
 void APuckGamePlayerController::StopJumping()

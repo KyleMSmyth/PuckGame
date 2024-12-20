@@ -41,6 +41,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* m_shootAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* m_flipAction;
+
 	bool GetHitResultUnderCursor(ECollisionChannel TraceChannel, bool bTraceComplex, FHitResult& HitResult) const;
 protected:
 	virtual void SetupInputComponent() override;
@@ -57,6 +60,8 @@ protected:
 	void StartShooting();
 	void StopShooting();
 
+	void FlipStart();
+	void FlipCancel();
 
 	void StopJumping();
 

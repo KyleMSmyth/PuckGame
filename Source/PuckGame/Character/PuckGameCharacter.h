@@ -55,6 +55,15 @@ public:
 	UFUNCTION()
 	void Shoot();
 
+	UFUNCTION()
+	void FlipPuck();
+
+	UFUNCTION()
+	void FlipStart();
+
+	UFUNCTION()
+	void FlipCancel();
+
 	UPROPERTY()
 	class APuckGamePlayerController* m_controller;
 
@@ -67,6 +76,20 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	float m_baseShotPower;
 	bool m_bIsCharging;
+	bool m_flipCharging;
+
+
+	UPROPERTY()
+	FVector m_flipStartPos;
+
+	UPROPERTY()
+	FRotator m_flipDelta;
+
+	UPROPERTY()
+	FRotator m_flipStartRot;
+
+	UPROPERTY(EditDefaultsOnly)
+	float m_flipWait = 0.0f;
 
 
 
