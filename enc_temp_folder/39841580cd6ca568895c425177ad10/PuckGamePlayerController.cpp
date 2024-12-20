@@ -115,7 +115,7 @@ void APuckGamePlayerController::BeginPlay()
 
 bool APuckGamePlayerController::GetHitResultUnderCursor(ECollisionChannel TraceChannel, bool bTraceComplex, FHitResult& HitResult) const
 {
-	ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(Player);
+	ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(m_character);
 	bool bHit = false;
 	if (LocalPlayer && LocalPlayer->ViewportClient)
 	{

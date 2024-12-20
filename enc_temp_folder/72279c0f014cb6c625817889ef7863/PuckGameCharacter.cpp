@@ -63,8 +63,8 @@ void APuckGameCharacter::Tick(float DeltaTime)
 
 	if (!this) return;
 
-	if(GetController() != nullptr)
-	{
+	//if(GetController() != nullptr)
+	//{
 		FHitResult Hit;
 		//APuckGamePlayerController* PC = Cast<APuckGamePlayerController>(GetController());
 
@@ -82,7 +82,7 @@ void APuckGameCharacter::Tick(float DeltaTime)
 
 		FRotator newRotation = FRotator(currentCharacterRotation.Pitch, targetRotation.Yaw, currentCharacterRotation.Roll);
 		SetActorRotation(newRotation);
-	}
+	//}
 
 		if (m_bIsCharging)
 			m_shotPower = FMath::Clamp(m_shotPower + (m_chargeRate * GetWorld()->GetDeltaSeconds()), 0.0f, 100000.0f);

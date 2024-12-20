@@ -41,6 +41,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* m_shootAction;
 
+	bool GetHitResultUnderCursor(ECollisionChannel TraceChannel, bool bTraceComplex, FHitResult& HitResult) const;
 protected:
 	virtual void SetupInputComponent() override;
 	virtual void AcknowledgePossession(APawn* pawn) override;

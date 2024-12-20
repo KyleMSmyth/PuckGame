@@ -55,6 +55,9 @@ public:
 	UFUNCTION()
 	void Shoot();
 
+	UPROPERTY()
+	class APuckGamePlayerController* m_controller;
+
 protected:
 	class APuck* m_attachedPuck;
 
@@ -65,7 +68,7 @@ protected:
 	float m_baseShotPower;
 	bool m_bIsCharging;
 
-	class APuckGamePlayerController* m_controller;
+
 
 protected:
 
