@@ -5,6 +5,7 @@
 #include "Components/BoxComponent.h"
 #include "PuckGame/Character/PuckGameCharacter.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/SphereComponent.h"
 
 // Sets default values
 APuck::APuck()
@@ -21,13 +22,23 @@ APuck::APuck()
 	//m_mesh->SetCollisionProfileName(ecollisionprofile)
 	//m_mesh->SetCollisionProfileName("Mesh");
 	m_mesh->SetSimulatePhysics(true);
-	m_mesh->SetGenerateOverlapEvents(true);
+	m_mesh->SetGenerateOverlapEvents(false);
 	m_mesh->SetupAttachment(RootComponent);
 	m_mesh->BodyInstance.bLockXRotation = true;
 	m_mesh->BodyInstance.bLockYRotation = true;
 
-	m_mesh->OnComponentHit.AddDynamic(this, &APuck::OnActorHit);
-	m_mesh->OnComponentBeginOverlap.AddDynamic(this, &APuck::OnBeginOverlap);
+	m_sphere = CreateDefaultSubobject<USphereComponent>("Overlap");
+	m_sphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	m_sphere->SetGenerateOverlapEvents(true);
+	m_sphere->SetCollisionProfileName("OverlapAll");
+	m_sphere->InitSphereRadius(64.0f);
+	m_sphere->bHiddenInGame = false;
+	m_sphere->SetSimulatePhysics(false);
+	m_sphere->SetupAttachment(RootComponent);
+
+	//m_mesh->OnComponentHit.AddDynamic(this, &APuck::OnActorHit);
+	//m_mesh->OnComponentBeginOverlap.AddDynamic(this, &APuck::OnBeginOverlap);
+	m_sphere->OnComponentBeginOverlap.AddDynamic(this, &APuck::OnBeginOverlap);
 
 	m_offset = 200.0f;
 }
@@ -67,7 +78,6 @@ void APuck::OnActorHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimit
 		m_mesh->SetSimulatePhysics(false);
 		m_mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		m_mesh->SetCollisionProfileName("OverlapAllDynamic");
-		m_mesh->SetGenerateOverlapEvents(true);
 
 		m_attachedCharacter = Cast<APuckGameCharacter>(OtherActor);
 		m_attachedCharacter->AttachPuck(this);
@@ -87,6 +97,20 @@ void APuck::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherAct
 		{
 			if(OtherActor != m_attachedCharacter)
 				DetachCharacter();
+		}
+	}
+
+	else
+	{
+		if (OtherActor == Cast<APuckGameCharacter>(OtherActor))
+		{
+			m_mesh->SetSimulatePhysics(false);
+			m_mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			m_mesh->SetCollisionProfileName("OverlapAllDynamic");
+			m_mesh->SetGenerateOverlapEvents(true);
+
+			m_attachedCharacter = Cast<APuckGameCharacter>(OtherActor);
+			m_attachedCharacter->AttachPuck(this);
 		}
 	}
 }

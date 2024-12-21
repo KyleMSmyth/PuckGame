@@ -18,6 +18,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Mesh")
 	class UStaticMeshComponent* m_mesh;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Overlap")
+	class USphereComponent* m_sphere;
+
 	UFUNCTION()
 	class UStaticMeshComponent* GetMesh() { return m_mesh; }
 
