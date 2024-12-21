@@ -18,6 +18,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Mesh")
 	class UStaticMeshComponent* m_mesh;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Overlap")
+	class USphereComponent* m_sphere;
+
 	UFUNCTION()
 	class UStaticMeshComponent* GetMesh() { return m_mesh; }
 
@@ -25,6 +28,9 @@ public:
 	class APuckGameCharacter* GetAttachedCharacter() { return m_attachedCharacter; }
 
 	void DetachCharacter(FVector OptionalForce = FVector::ZeroVector);
+
+	UFUNCTION()
+	void OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 protected:
 	// Called when the game starts or when spawned

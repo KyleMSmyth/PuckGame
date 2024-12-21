@@ -28,13 +28,13 @@ APuck::APuck()
 	m_sphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	m_sphere->SetGenerateOverlapEvents(true);
 	m_sphere->SetCollisionProfileName("OverlapAll");
-	m_sphere->InitSphereRadius(24.0f);
+	m_sphere->InitSphereRadius(64.0f);
 	m_sphere->bHiddenInGame = false;
 	m_sphere->SetSimulatePhysics(false);
 	m_sphere->SetupAttachment(RootComponent);
 
 
-	m_offset = 150.0f;
+	m_offset = 200.0f;
 
 	m_sphere->OnComponentBeginOverlap.AddDynamic(this, &APuck::OnBeginOverlap);
 }
