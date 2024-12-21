@@ -252,6 +252,7 @@ void APuckGameCharacter::Shoot()
 		if (m_attachedPuck)
 		{
 			m_bIsCharging = false;
+			m_flipCharging = false;
 			m_attachedPuck->DetachCharacter((GetActorForwardVector().GetSafeNormal() * m_shotPower));
 
 			DetachPuck();

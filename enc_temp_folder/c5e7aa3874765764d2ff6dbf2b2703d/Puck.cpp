@@ -20,8 +20,6 @@ APuck::APuck()
 	m_mesh->SetCollisionProfileName("Mesh");
 	m_mesh->SetSimulatePhysics(true);
 	m_mesh->SetupAttachment(RootComponent);
-	m_mesh->BodyInstance.bLockXRotation = true;
-	m_mesh->BodyInstance.bLockYRotation = true;
 
 	m_mesh->OnComponentHit.AddDynamic(this, &APuck::OnActorHit);
 	m_mesh->OnComponentBeginOverlap.AddDynamic(this, &APuck::OnBeginOverlap);
@@ -32,17 +30,12 @@ APuck::APuck()
 void APuck::DetachCharacter(FVector OptionalForce)
 {
 	m_attachedCharacter = nullptr;
-
-
+	m_mesh->ComponentVelocity = FVector::ZeroVector;
 
 	//m_mesh->SetSimulatePhysics(true);
 	m_mesh->SetEnableGravity(true);
-	//m_mesh->BodyInstance.bLockXRotation = false;
-	//m_mesh->BodyInstance.bLockYRotation = false;
-
-	m_mesh->ComponentVelocity = FVector::ZeroVector;
-	SetActorRotation(FRotator::ZeroRotator);
-
+	m_mesh->BodyInstance.bLockXRotation = false;
+	m_mesh->BodyInstance.bLockYRotation = false;
 	GetMesh()->AddImpulse(OptionalForce);
 
 }
@@ -60,11 +53,13 @@ void APuck::OnActorHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimit
 	{
 		m_attachedCharacter = Cast<APuckGameCharacter>(OtherActor);
 		m_attachedCharacter->AttachPuck(this);
+		m_mesh->SetWorldRotation(FRotator::ZeroRotator);
 		//m_mesh->SetSimulatePhysics(false);
 		m_mesh->SetEnableGravity(false);
+		m_mesh->BodyInstance.bLockXRotation = true;
+		m_mesh->BodyInstance.bLockYRotation = true;
 
-		m_mesh->ComponentVelocity = FVector::ZeroVector;
-		SetActorRotation(FRotator::ZeroRotator);
+		m_mesh->SetRelativeRotation(FRotator::ZeroRotator);
 	}
 }
 
@@ -85,9 +80,7 @@ void APuck::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	if(m_attachedCharacter)
-	{
 		SetActorLocation(m_attachedCharacter->GetActorLocation() + m_attachedCharacter->GetActorForwardVector().GetSafeNormal() * m_offset);
-	}
 
 }
 
