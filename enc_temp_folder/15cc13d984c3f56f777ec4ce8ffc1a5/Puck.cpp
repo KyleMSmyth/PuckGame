@@ -16,10 +16,14 @@ APuck::APuck()
 
 
 	m_mesh = CreateDefaultSubobject<UStaticMeshComponent>("Mesh");
-	m_mesh->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
-	m_mesh->SetCollisionProfileName("Mesh");
+	m_mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	//m_mesh->SetCollisionProfileName(ecollisionprofile)
+	//m_mesh->SetCollisionProfileName("Mesh");
 	m_mesh->SetSimulatePhysics(true);
+	m_mesh->SetGenerateOverlapEvents(true);
 	m_mesh->SetupAttachment(RootComponent);
+	m_mesh->BodyInstance.bLockXRotation = true;
+	m_mesh->BodyInstance.bLockYRotation = true;
 
 	m_mesh->OnComponentHit.AddDynamic(this, &APuck::OnActorHit);
 	m_mesh->OnComponentBeginOverlap.AddDynamic(this, &APuck::OnBeginOverlap);
@@ -30,12 +34,17 @@ APuck::APuck()
 void APuck::DetachCharacter(FVector OptionalForce)
 {
 	m_attachedCharacter = nullptr;
-	m_mesh->ComponentVelocity = FVector::ZeroVector;
 
-	//m_mesh->SetSimulatePhysics(true);
-	m_mesh->SetEnableGravity(true);
-	m_mesh->BodyInstance.bLockXRotation = false;
-	m_mesh->BodyInstance.bLockYRotation = false;
+
+
+	m_mesh->SetSimulatePhysics(true);
+	//m_mesh->SetEnableGravity(true);
+	//m_mesh->BodyInstance.bLockXRotation = false;
+	//m_mesh->BodyInstance.bLockYRotation = false;
+
+	m_mesh->ComponentVelocity = FVector::ZeroVector;
+	SetActorRotation(FRotator::ZeroRotator);
+
 	GetMesh()->AddImpulse(OptionalForce);
 
 }
@@ -53,23 +62,23 @@ void APuck::OnActorHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimit
 	{
 		m_attachedCharacter = Cast<APuckGameCharacter>(OtherActor);
 		m_attachedCharacter->AttachPuck(this);
-		m_mesh->SetWorldRotation(FRotator::ZeroRotator);
-		//m_mesh->SetSimulatePhysics(false);
-		m_mesh->SetEnableGravity(false);
-		m_mesh->BodyInstance.bLockXRotation = true;
-		m_mesh->BodyInstance.bLockYRotation = true;
+		m_mesh->SetSimulatePhysics(false);
+		m_mesh->SetGenerateOverlapEvents(true);
+		//m_mesh->SetEnableGravity(false);
 
-		m_mesh->SetRelativeRotation(FRotator::ZeroRotator);
+		//m_mesh->ComponentVelocity = FVector::ZeroVector;
+		//SetActorRotation(FRotator::ZeroRotator);
 	}
 }
 
 void APuck::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (!m_attachedCharacter)
+	if (m_attachedCharacter)
 	{
 		if (OtherActor == Cast<APuckGameCharacter>(OtherActor))
 		{
-			DetachCharacter();
+			if(OtherActor != m_attachedCharacter)
+				DetachCharacter();
 		}
 	}
 }
@@ -80,7 +89,9 @@ void APuck::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	if(m_attachedCharacter)
+	{
 		SetActorLocation(m_attachedCharacter->GetActorLocation() + m_attachedCharacter->GetActorForwardVector().GetSafeNormal() * m_offset);
+	}
 
 }
 

@@ -16,9 +16,12 @@ APuck::APuck()
 
 
 	m_mesh = CreateDefaultSubobject<UStaticMeshComponent>("Mesh");
-	m_mesh->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
-	m_mesh->SetCollisionProfileName("Mesh");
+	m_mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	m_mesh->SetCollisionProfileName("BlockAllDynamic");
+	//m_mesh->SetCollisionProfileName(ecollisionprofile)
+	//m_mesh->SetCollisionProfileName("Mesh");
 	m_mesh->SetSimulatePhysics(true);
+	m_mesh->SetGenerateOverlapEvents(true);
 	m_mesh->SetupAttachment(RootComponent);
 	m_mesh->BodyInstance.bLockXRotation = true;
 	m_mesh->BodyInstance.bLockYRotation = true;
@@ -35,8 +38,11 @@ void APuck::DetachCharacter(FVector OptionalForce)
 
 
 
-	//m_mesh->SetSimulatePhysics(true);
-	m_mesh->SetEnableGravity(true);
+	m_mesh->SetSimulatePhysics(true);
+	m_mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	m_mesh->SetCollisionProfileName("BlockAllDynamic");
+
+	//m_mesh->SetEnableGravity(true);
 	//m_mesh->BodyInstance.bLockXRotation = false;
 	//m_mesh->BodyInstance.bLockYRotation = false;
 
@@ -58,23 +64,29 @@ void APuck::OnActorHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimit
 {
 	if (OtherActor == Cast<APuckGameCharacter>(OtherActor))
 	{
+		m_mesh->SetSimulatePhysics(false);
+		m_mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		m_mesh->SetCollisionProfileName("OverlapAllDynamic");
+		m_mesh->SetGenerateOverlapEvents(true);
+
 		m_attachedCharacter = Cast<APuckGameCharacter>(OtherActor);
 		m_attachedCharacter->AttachPuck(this);
-		//m_mesh->SetSimulatePhysics(false);
-		m_mesh->SetEnableGravity(false);
 
-		m_mesh->ComponentVelocity = FVector::ZeroVector;
-		SetActorRotation(FRotator::ZeroRotator);
+		//m_mesh->SetEnableGravity(false);
+
+		//m_mesh->ComponentVelocity = FVector::ZeroVector;
+		//SetActorRotation(FRotator::ZeroRotator);
 	}
 }
 
 void APuck::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (!m_attachedCharacter)
+	if (m_attachedCharacter)
 	{
 		if (OtherActor == Cast<APuckGameCharacter>(OtherActor))
 		{
-			DetachCharacter();
+			if(OtherActor != m_attachedCharacter)
+				DetachCharacter();
 		}
 	}
 }
