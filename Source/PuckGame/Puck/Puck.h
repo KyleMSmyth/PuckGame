@@ -22,6 +22,9 @@ public:
 	class USphereComponent* m_sphere;
 
 	UFUNCTION()
+	class USphereComponent* GetSphere() { return m_sphere; }
+
+	UFUNCTION()
 	class UStaticMeshComponent* GetMesh() { return m_mesh; }
 
 	UFUNCTION()

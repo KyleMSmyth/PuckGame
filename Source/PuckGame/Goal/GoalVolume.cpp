@@ -3,7 +3,8 @@
 
 #include "GoalVolume.h"
 #include "Components/BoxComponent.h"
-#include "Puck/Puck.h"
+#include "Components/SphereComponent.h"
+#include "../Puck/Puck.h"
 
 // Sets default values
 AGoalVolume::AGoalVolume()
@@ -39,7 +40,22 @@ void AGoalVolume::Tick(float DeltaTime)
 void AGoalVolume::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if(OtherActor == Cast<APuck>(OtherActor))
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, FString("goal"));
+	{
+		APuck* Puck = Cast<APuck>(OtherActor);
+		FVector Pos = Puck->GetActorLocation();
+		float Rad = Puck->GetSphere()->GetScaledSphereRadius();
+		
+
+		if(Pos.X < GetActorLocation().X + ((m_box->GetScaledBoxExtent().X/2) - Rad)
+			&& Pos.X > GetActorLocation().X - ((m_box->GetScaledBoxExtent().X / 2) + Rad)
+				&& Pos.Y < GetActorLocation().Y + ((m_box->GetScaledBoxExtent().Y / 2) - Rad)
+					&& Pos.Y > GetActorLocation().Y - ((m_box->GetScaledBoxExtent().Y / 2) + Rad))
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, FString("goal"));
+
+		}
+
+	}
 
 }
 

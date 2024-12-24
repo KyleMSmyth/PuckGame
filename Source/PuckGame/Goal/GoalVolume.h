@@ -25,6 +25,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	FVector m_boxSize = FVector(200, 100, 100);
 
+	UPROPERTY(EditDefaultsOnly)
+	int m_team;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
