@@ -46,10 +46,10 @@ void AGoalVolume::Tick(float DeltaTime)
 			float Rad = m_puck->GetSphere()->GetScaledSphereRadius();
 
 
-			if (Pos.X < GetActorLocation().X + (m_box->GetScaledBoxExtent().X- Rad)
-				&& Pos.X > GetActorLocation().X - (m_box->GetScaledBoxExtent().X - Rad)
-				&& Pos.Y < GetActorLocation().Y + (m_box->GetScaledBoxExtent().Y - Rad)
-				&& Pos.Y > GetActorLocation().Y - (m_box->GetScaledBoxExtent().Y - Rad))
+			if (Pos.X < GetActorLocation().X + ((m_box->GetScaledBoxExtent().X / 2) - Rad)
+				&& Pos.X > GetActorLocation().X - ((m_box->GetScaledBoxExtent().X / 2) + Rad)
+				&& Pos.Y < GetActorLocation().Y + ((m_box->GetScaledBoxExtent().Y / 2) - Rad)
+				&& Pos.Y > GetActorLocation().Y - ((m_box->GetScaledBoxExtent().Y / 2) + Rad))
 			{
 				GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, FString("goal"));
 

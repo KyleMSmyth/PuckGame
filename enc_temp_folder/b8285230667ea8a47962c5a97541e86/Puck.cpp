@@ -19,9 +19,6 @@ APuck::APuck()
 	m_mesh->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 	m_mesh->SetCollisionProfileName("Mesh");
 	m_mesh->SetSimulatePhysics(true);
-	m_mesh->BodyInstance.bLockXRotation = true;
-	m_mesh->BodyInstance.bLockYRotation = true;
-
 	RootComponent = m_mesh;
 	//m_mesh->SetupAttachment(RootComponent);
 
