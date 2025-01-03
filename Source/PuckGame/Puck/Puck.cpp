@@ -60,7 +60,10 @@ void APuck::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherAct
 		if (OtherActor == Cast<APuckGameCharacter>(OtherActor))
 		{
 			if (OtherActor != m_attachedCharacter)
+			{
+				m_attachedCharacter->DetachPuck();
 				DetachCharacter();
+			}
 		}
 	}
 

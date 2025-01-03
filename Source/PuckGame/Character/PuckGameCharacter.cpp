@@ -121,6 +121,8 @@ void APuckGameCharacter::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
 	if (OtherActor == Cast<APuckGameCharacter>(OtherActor))
 	{
 		APuckGameCharacter* OtherChar = Cast<APuckGameCharacter>(OtherActor);
+
+		//TO DO: Implement rotation as a factor
 		if(OtherChar->GetCharacterMovement()->Velocity.Length() > m_baseSpeed + 50.0f)
 		{
 			m_attachedPuck->DetachCharacter((GetCharacterMovement()->Velocity + OtherChar->GetCharacterMovement()->Velocity) * 10.0f);
@@ -146,6 +148,7 @@ void APuckGameCharacter::Tick(float DeltaTime)
 
 	if (!this) return;
 
+	//if()
 	if (GetController() != nullptr)
 	{
 		FHitResult Hit;
