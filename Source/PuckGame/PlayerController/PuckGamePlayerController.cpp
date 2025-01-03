@@ -39,6 +39,10 @@ void APuckGamePlayerController::SetupInputComponent()
 
 		// Looking
 		Component->BindAction(m_lookAction, ETriggerEvent::Triggered, this, &APuckGamePlayerController::Look);
+
+		//BodyChecking
+		Component->BindAction(m_checkAction, ETriggerEvent::Triggered, this, &APuckGamePlayerController::BodyCheck);
+
 	}
 
 }
@@ -62,6 +66,13 @@ void APuckGamePlayerController::Jump()
 	if (!m_character) return;
 
 	m_character->Jump();
+}
+
+void APuckGamePlayerController::BodyCheck()
+{
+	if (!m_character) return;
+
+	m_character->BodyCheck();
 }
 
 void APuckGamePlayerController::StartShooting()
