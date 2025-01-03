@@ -70,6 +70,9 @@ public:
 	UFUNCTION()
 	void StopSprint();
 
+	UFUNCTION()
+	void BodyCheck();
+
 
 	UPROPERTY()
 	class APuckGamePlayerController* m_controller;
@@ -79,6 +82,8 @@ protected:
 
 	float m_chargeRate;
 	float m_shotPower;
+	
+	float m_checkingForce;
 
 	UPROPERTY(EditDefaultsOnly)
 	float m_baseShotPower;
@@ -104,6 +109,7 @@ protected:
 	FTimerHandle m_staminaRefill;
 
 	bool m_bIsHustle ;
+	bool m_bIsChecking;
 
 	void RefillStamima();
 
@@ -114,7 +120,13 @@ protected:
 	float m_baseSpeed;
 
 	UPROPERTY(EditDefaultsOnly)
+	float m_baseAccel;
+
+	UPROPERTY(EditDefaultsOnly)
 	float m_sprintSpeed;
+
+	UPROPERTY(EditDefaultsOnly)
+	float m_sprintAccel;
 
 	UPROPERTY(EditDefaultsOnly)
 	float m_maxStamina = 100.0f;
@@ -133,6 +145,12 @@ protected:
 
 	UPROPERTY()
 	float m_staminaDeltaTime = 0.0f;
+
+	UPROPERTY()
+	float m_checkingDeltaTime = 0.0f;
+
+	UPROPERTY()
+	float m_checkingCooldown = 2.0f;
 
 
 

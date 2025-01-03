@@ -23,7 +23,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY(EditDefaultsOnly)
-	FVector m_boxSize = FVector(200, 100, 100);
+	FVector m_boxSize = FVector(100, 200, 100);
 
 	UPROPERTY(EditDefaultsOnly)
 	int m_team;

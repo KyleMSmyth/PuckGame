@@ -45,7 +45,7 @@ void AGoalVolume::Tick(float DeltaTime)
 			FVector Pos = m_puck->GetActorLocation();
 			float Rad = m_puck->GetSphere()->GetScaledSphereRadius();
 
-
+			// TO DO: Add functionality to check rotated goal
 			if (Pos.X < GetActorLocation().X + (m_box->GetScaledBoxExtent().X- Rad)
 				&& Pos.X > GetActorLocation().X - (m_box->GetScaledBoxExtent().X - Rad)
 				&& Pos.Y < GetActorLocation().Y + (m_box->GetScaledBoxExtent().Y - Rad)

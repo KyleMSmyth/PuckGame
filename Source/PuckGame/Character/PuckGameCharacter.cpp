@@ -23,6 +23,7 @@ APuckGameCharacter::APuckGameCharacter()
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
+	GetCapsuleComponent()->SetSimulatePhysics(true);
 
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
@@ -39,7 +40,7 @@ APuckGameCharacter::APuckGameCharacter()
 	GetCharacterMovement()->AirControl = 0.35f;
 	GetCharacterMovement()->MaxWalkSpeed = 500.f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
-	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
+	GetCharacterMovement()->BrakingDecelerationWalking = 100.f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
 
 	m_chargeRate = 75000.0f;
@@ -49,7 +50,11 @@ APuckGameCharacter::APuckGameCharacter()
 	m_stamina = m_maxStamina;
 	m_baseSpeed = 500.0f;
 	m_sprintSpeed = 750.0f;
+	m_baseAccel = 1024.0f;
+	m_sprintAccel = 2048.0f;
+	m_checkingForce = 100000.0f;
 	m_bIsHustle = false;
+	m_bIsChecking = false;
 
 	m_controller = Cast<APuckGamePlayerController>(Controller);
 }
@@ -74,9 +79,11 @@ bool APuckGameCharacter::DrainStamina(float amount)
 
 void APuckGameCharacter::Sprint()
 {
-	if(Controller != nullptr)
+	if (Controller != nullptr)
 	{
-			m_bIsHustle = true;
+		m_bIsHustle = true;
+		GetCharacterMovement()->MaxWalkSpeed = m_sprintSpeed;
+		GetCharacterMovement()->MaxAcceleration = m_sprintAccel;
 	}
 }
 
@@ -85,9 +92,24 @@ void APuckGameCharacter::StopSprint()
 	if (Controller != nullptr)
 	{
 		GetCharacterMovement()->MaxWalkSpeed = m_baseSpeed;
+		GetCharacterMovement()->MaxAcceleration = m_baseAccel;
 
 		m_bIsHustle = false;
 	}
+}
+
+void APuckGameCharacter::BodyCheck()
+{
+	if (GetCharacterMovement()->IsFalling()) return;
+
+	if (m_attachedPuck) return;
+
+	if (!m_bIsChecking)
+	{
+		m_bIsChecking = true;
+		GetCharacterMovement()->AddImpulse(GetActorForwardVector() * m_checkingForce);
+	}
+
 }
 
 void APuckGameCharacter::BeginPlay()
@@ -130,7 +152,7 @@ void APuckGameCharacter::Tick(float DeltaTime)
 
 	if (m_bIsCharging)
 	{
-		if(m_flipCharging)		
+		if (m_flipCharging)
 		{
 			m_shotPower = FMath::Clamp(m_shotPower + (m_chargeRate * GetWorld()->GetDeltaSeconds()), 0.0f, 50000.0f);
 		}
@@ -158,7 +180,6 @@ void APuckGameCharacter::Tick(float DeltaTime)
 		else
 		{
 			Sprint();
-			GetCharacterMovement()->MaxWalkSpeed = m_sprintSpeed ;
 			m_staminaDeltaTime = 0.0f;
 		}
 	}
@@ -169,8 +190,33 @@ void APuckGameCharacter::Tick(float DeltaTime)
 		if (m_stamina > m_maxStamina)
 			m_stamina = m_maxStamina;
 	}
-	
+
+	if (GetCharacterMovement()->Velocity.Length() > m_baseSpeed + 50.0f)
+	{
+		float tempVel = GetCharacterMovement()->Velocity.Length();
+
+		if (m_bIsChecking)
+		{
+
+			GetCharacterMovement()->BrakingDecelerationWalking = 2000.0f;
+		}
+	}
+	else
+	{
+		if(m_checkingDeltaTime > m_checkingCooldown/4)
+			GetCharacterMovement()->BrakingDecelerationWalking = 100.0f;
+
+		if(m_checkingDeltaTime >= m_checkingCooldown)
+		{
+			m_bIsChecking = false;
+			m_checkingDeltaTime = 0.0f;
+		}
+	}
+
 	m_staminaDeltaTime += DeltaTime;
+
+	if(m_bIsChecking)
+		m_checkingDeltaTime += DeltaTime;
 }
 
 
@@ -204,6 +250,11 @@ void APuckGameCharacter::Move(const FInputActionValue& Value)
 		// add movement 
 		AddMovementInput(ForwardMovement.GetSafeNormal(), MovementVector.Y);
 		AddMovementInput(RightMovement.GetSafeNormal(), MovementVector.X);
+
+		//Physics movement (TO DO: write pawn from scratch?)
+	/*	GetCapsuleComponent()->AddForce(ForwardMovement.GetSafeNormal() * MovementVector.Y * 1000000);
+		GetCapsuleComponent()->AddForce(RightMovement.GetSafeNormal() * MovementVector.X * 1000000);*/
+
 	}
 }
 
@@ -279,9 +330,9 @@ void APuckGameCharacter::FlipPuck()
 
 void APuckGameCharacter::FlipStart()
 {
-	if(Controller != nullptr)
+	if (Controller != nullptr)
 	{
-		if(m_attachedPuck != nullptr)
+		if (m_attachedPuck != nullptr)
 		{
 			m_flipStartRot = GetActorRotation();
 			m_flipStartPos = m_attachedPuck->GetActorLocation();
@@ -292,14 +343,14 @@ void APuckGameCharacter::FlipStart()
 
 void APuckGameCharacter::FlipCancel()
 {
-	if(Controller != nullptr)
+	if (Controller != nullptr)
 	{
-		if(m_attachedPuck)
+		if (m_attachedPuck)
 		{
 			m_flipCharging = false;
 			m_bIsCharging = false;
 
-			m_attachedPuck->DetachCharacter((m_attachedPuck->GetActorLocation() - m_flipStartPos) + FVector::UpVector * m_shotPower/2);
+			m_attachedPuck->DetachCharacter((m_attachedPuck->GetActorLocation() - m_flipStartPos) + FVector::UpVector * m_shotPower / 2);
 			DetachPuck();
 			m_shotPower = m_baseShotPower;
 		}
