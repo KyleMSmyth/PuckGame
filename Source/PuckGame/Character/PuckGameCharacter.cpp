@@ -57,6 +57,8 @@ APuckGameCharacter::APuckGameCharacter()
 	m_bIsChecking = false;
 
 	m_controller = Cast<APuckGamePlayerController>(Controller);
+
+	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &APuckGameCharacter::OnHit);
 }
 
 void APuckGameCharacter::RefillStamima()
@@ -110,6 +112,21 @@ void APuckGameCharacter::BodyCheck()
 		GetCharacterMovement()->AddImpulse(GetActorForwardVector() * m_checkingForce);
 	}
 
+}
+
+void APuckGameCharacter::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	if (!m_attachedPuck) return;
+
+	if (OtherActor == Cast<APuckGameCharacter>(OtherActor))
+	{
+		APuckGameCharacter* OtherChar = Cast<APuckGameCharacter>(OtherActor);
+		if(OtherChar->GetCharacterMovement()->Velocity.Length() > m_baseSpeed + 50.0f)
+		{
+			m_attachedPuck->DetachCharacter((GetCharacterMovement()->Velocity + OtherChar->GetCharacterMovement()->Velocity) * 10.0f);
+			DetachPuck();
+		}
+	}
 }
 
 void APuckGameCharacter::BeginPlay()
