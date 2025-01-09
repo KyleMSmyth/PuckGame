@@ -77,6 +77,12 @@ protected:
 	void StartSprint();
 	void StopSprint();
 
+	void DetermineInputDeviceDetails(FKey PressedKey);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Device")
+	bool m_bIsGamepad;
+
+
 private:
 	class APuckGameCharacter* m_character;
 

@@ -7,6 +7,7 @@
 #include "InputActionValue.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/LocalPlayer.h"
+#include "GameFramework/InputSettings.h"
 
 
 
@@ -44,6 +45,8 @@ void APuckGamePlayerController::SetupInputComponent()
 		//BodyChecking
 		Component->BindAction(m_checkAction, ETriggerEvent::Triggered, this, &APuckGamePlayerController::BodyCheck);
 
+		//CheckDevice
+		//Component->BindAction(, ETriggerEvent::Triggered, this, APuckGamePlayerController::DetermineInputDeviceDetails);
 	}
 
 }
@@ -59,7 +62,7 @@ void APuckGamePlayerController::Look(const FInputActionValue& value)
 {
 	if (!m_character) return;
 
-	//if(UInputDeviceSubsystem* asdf )
+	
 	m_character->Look(value);
 }
 
@@ -125,6 +128,10 @@ void APuckGamePlayerController::StopSprint()
 
 	m_character->StopSprint();
 
+}
+
+void APuckGamePlayerController::DetermineInputDeviceDetails(FKey PressedKey)
+{
 }
 
 void APuckGamePlayerController::AcknowledgePossession(APawn* pawn)
