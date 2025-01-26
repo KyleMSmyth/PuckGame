@@ -8,6 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Engine/LocalPlayer.h"
 #include "GameFramework/InputSettings.h"
+#include "GameFramework/InputDeviceSubsystem.h"
 
 
 
@@ -54,6 +55,8 @@ void APuckGamePlayerController::SetupInputComponent()
 void APuckGamePlayerController::Move(const FInputActionValue& value)
 {
 	if (!m_character) return;
+	
+
 
 	m_character->Move(value);
 }
@@ -62,8 +65,8 @@ void APuckGamePlayerController::Look(const FInputActionValue& value)
 {
 	if (!m_character) return;
 
-	
-	m_character->Look(value);
+	if(m_bIsGamepad)
+		m_character->Look(value);
 }
 
 void APuckGamePlayerController::Jump()
@@ -130,8 +133,22 @@ void APuckGamePlayerController::StopSprint()
 
 }
 
-void APuckGamePlayerController::DetermineInputDeviceDetails(FKey PressedKey)
+bool APuckGamePlayerController::DetermineInputDeviceDetails()
 {
+	if (!m_character) return false;
+
+	if (!InputDeviceSubsystem) return false;
+
+	if (InputDeviceSubsystem->GetMostRecentlyUsedHardwareDevice(GetPlatformUserId())!= FHardwareDeviceIdentifier::DefaultKeyboardAndMouse)
+	{
+		m_bIsGamepad = true;
+		return m_bIsGamepad;
+	}
+	else
+	{
+		m_bIsGamepad = false;
+		return m_bIsGamepad;
+	}
 }
 
 void APuckGamePlayerController::AcknowledgePossession(APawn* pawn)
@@ -160,6 +177,8 @@ void APuckGamePlayerController::BeginPlay()
 				Subsystem->AddMappingContext(m_mappingContext, 0);
 			}
 		}
+
+		InputDeviceSubsystem = GetGameInstance()->GetEngine()->GetEngineSubsystem<UInputDeviceSubsystem>();
 	}
 
 	bShowMouseCursor = true;
@@ -172,22 +191,26 @@ void APuckGamePlayerController::BeginPlay()
 
 bool APuckGamePlayerController::GetHitResultUnderCursor(ECollisionChannel TraceChannel, bool bTraceComplex, FHitResult& HitResult) const
 {
-	ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(Player);
-	bool bHit = false;
-	if (LocalPlayer && LocalPlayer->ViewportClient)
+	if(!m_bIsGamepad)
 	{
-		FVector2D MousePosition;
-		if (LocalPlayer->ViewportClient->GetMousePosition(MousePosition))
+		ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(Player);
+		bool bHit = false;
+		if (LocalPlayer && LocalPlayer->ViewportClient)
 		{
-			bHit = GetHitResultAtScreenPosition(MousePosition, TraceChannel, bTraceComplex, HitResult);
+			FVector2D MousePosition;
+			if (LocalPlayer->ViewportClient->GetMousePosition(MousePosition))
+			{
+				bHit = GetHitResultAtScreenPosition(MousePosition, TraceChannel, bTraceComplex, HitResult);
+			}
 		}
-	}
 
-	if (!bHit)	//If there was no hit we reset the results. This is redundant but helps Blueprint users
-	{
-		HitResult = FHitResult();
-	}
+		if (!bHit)	//If there was no hit we reset the results. This is redundant but helps Blueprint users
+		{
+			HitResult = FHitResult();
+		}
 
-	return bHit;
+		return bHit;
+	}
+	return false;
 }
 

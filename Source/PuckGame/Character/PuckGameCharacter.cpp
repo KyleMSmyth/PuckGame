@@ -32,7 +32,8 @@ APuckGameCharacter::APuckGameCharacter()
 
 	// Configure character movement
 	GetCharacterMovement()->bOrientRotationToMovement = false; // Character moves in the direction of input...
-	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f); // ...at this rotation rate
+
+	GetCharacterMovement()->RotationRate = FRotator(0.0f, 250.0f, 0.0f); // ...at this rotation rate
 
 	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
 	// instead of recompiling to adjust them
@@ -55,6 +56,7 @@ APuckGameCharacter::APuckGameCharacter()
 	m_checkingForce = 100000.0f;
 	m_bIsHustle = false;
 	m_bIsChecking = false;
+	
 
 	m_controller = Cast<APuckGamePlayerController>(Controller);
 
@@ -151,23 +153,26 @@ void APuckGameCharacter::Tick(float DeltaTime)
 	//if()
 	if (GetController() != nullptr)
 	{
-		FHitResult Hit;
-		//APuckGamePlayerController* PC = Cast<APuckGamePlayerController>(GetController());
+		if(Cast<APuckGamePlayerController>(Controller)->DetermineInputDeviceDetails() == false)
+		{
+			FHitResult Hit;
+			//APuckGamePlayerController* PC = Cast<APuckGamePlayerController>(GetController());
 
-		//PC->GetHitResultUnderCursor(ECC_WorldStatic, true, Hit);
+			//PC->GetHitResultUnderCursor(ECC_WorldStatic, true, Hit);
 
-		//GetWorld()->GetFirstPlayerController()->GetHitResultUnderCursor(ECC_WorldStatic, true, Hit);
+			//GetWorld()->GetFirstPlayerController()->GetHitResultUnderCursor(ECC_WorldStatic, true, Hit);
 
-		m_controller->GetHitResultUnderCursor(ECC_WorldDynamic, true, Hit);
+			m_controller->GetHitResultUnderCursor(ECC_WorldDynamic, true, Hit);
 
-		FVector Direction = Hit.Location - GetActorLocation();
+			FVector Direction = Hit.Location - GetActorLocation();
 
-		//FVector mouseLocation, mouseDirection;
-		FRotator currentCharacterRotation = this->GetActorRotation();
-		FRotator targetRotation = Direction.Rotation();
+			//FVector mouseLocation, mouseDirection;
+			FRotator currentCharacterRotation = this->GetActorRotation();
+			FRotator targetRotation = Direction.Rotation();
 
-		FRotator newRotation = FRotator(currentCharacterRotation.Pitch, targetRotation.Yaw, currentCharacterRotation.Roll);
-		SetActorRotation(newRotation);
+			FRotator newRotation = FRotator(currentCharacterRotation.Pitch, targetRotation.Yaw, currentCharacterRotation.Roll);
+			SetActorRotation(newRotation);
+		}
 	}
 
 	if (m_bIsCharging)
@@ -280,14 +285,34 @@ void APuckGameCharacter::Move(const FInputActionValue& Value)
 
 void APuckGameCharacter::Look(const FInputActionValue& Value)
 {
-	// input is a Vector2D
-	FVector2D LookAxisVector = Value.Get<FVector2D>();
+	
 
 	if (Controller != nullptr)
 	{
-		// add yaw and pitch input to controller
-		AddControllerYawInput(LookAxisVector.X);
-		AddControllerPitchInput(LookAxisVector.Y);
+
+		//// input is a Vector2D
+		FVector2D LookAxisVector = Value.Get<FVector2D>();
+
+		APlayerCameraManager* CamManager = GetWorld()->GetFirstPlayerController()->PlayerCameraManager;
+
+		const FVector CamDir = FVector(CamManager->GetTransformComponent()->GetComponentLocation()) - GetActorLocation();
+
+		FRotator targetRotation = CamDir.Rotation();
+
+
+		FVector adjustedVector;
+		adjustedVector.X = LookAxisVector.X;
+		adjustedVector.Y = LookAxisVector.Y;
+
+		//// add yaw and pitch input to controller
+
+		float dir = FMath::Atan2(adjustedVector.Y, adjustedVector.X);
+		dir = FMath::RadiansToDegrees(dir);
+
+		FRotator newRotation = FRotator(0, dir + targetRotation.Yaw - 90.0f, 0);
+
+		SetActorRotation(FMath::Lerp(GetActorRotation(), newRotation, 0.3));
+
 	}
 }
 

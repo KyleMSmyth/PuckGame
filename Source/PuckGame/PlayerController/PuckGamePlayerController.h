@@ -52,6 +52,12 @@ public:
 	UInputAction* m_checkAction;
 
 	bool GetHitResultUnderCursor(ECollisionChannel TraceChannel, bool bTraceComplex, FHitResult& HitResult) const;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Device")
+	bool m_bIsGamepad;
+
+	bool DetermineInputDeviceDetails();
+
 protected:
 	virtual void SetupInputComponent() override;
 	virtual void AcknowledgePossession(APawn* pawn) override;
@@ -77,10 +83,10 @@ protected:
 	void StartSprint();
 	void StopSprint();
 
-	void DetermineInputDeviceDetails(FKey PressedKey);
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Device")
-	bool m_bIsGamepad;
+
+
+	class UInputDeviceSubsystem* InputDeviceSubsystem;
 
 
 private:
