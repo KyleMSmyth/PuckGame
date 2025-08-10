@@ -363,7 +363,7 @@ void APuckGameCharacter::FlipPuck()
 	if (m_attachedPuck)
 	{
 		m_bIsCharging = false;
-		m_attachedPuck->DetachCharacter(((m_attachedPuck->GetActorLocation() - m_flipStartPos) + m_baseShotPower) + (FVector::UpVector * m_shotPower));
+		m_attachedPuck->DetachCharacter(((m_attachedPuck->GetActorLocation() - m_flipStartPos) + m_baseShotPower) + (FVector::UpVector * m_shotPower/4));
 
 		DetachPuck();
 		m_shotPower = m_baseShotPower;

@@ -52,6 +52,12 @@ void APuck::DetachCharacter(FVector OptionalForce)
 
 }
 
+void APuck::ResetVelocity()
+{
+	m_mesh->SetPhysicsLinearVelocity(FVector(0, 0, 0));
+
+}
+
 void APuck::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 
